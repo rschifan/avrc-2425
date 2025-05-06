@@ -1,48 +1,13 @@
 <html>
 
 <head>
-
-    <style>
-        body,
-        html {
-            padding: 0px;
-            margin: 0px;
-            background-color: gray;
-            font-family: Arial, sans-serif;
-        }
-
-        #container {
-            width: 100%;
-            height: 100%;
-        }
-
-        .tooltip {
-            paint-order: stroke;
-            font-weight: bold;
-            font-size: 20px;
-            text-anchor: middle;
-            pointer-events: none;
-            stroke: #222;
-            stroke-width: 10px;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            fill: white;
-        }
-
-        .labels {
-            font-size: 12px;
-            font-weight: 100;
-            text-anchor: middle;
-            pointer-events: none;
-            fill: #222;
-
-        }
-    </style>
-
-
+    <link rel="stylesheet" href="css/got_styles.css">
     <script type="module">
-
         import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+
+        // Ensure spinner is visible before loading starts
+        document.getElementById("spinner").style.display = "block";
+        document.getElementById("container").style.opacity = 0.1;
 
         const width = container.getBoundingClientRect().width;
         const height = container.getBoundingClientRect().height;
@@ -145,11 +110,11 @@
                     // Add node labels when hovering on a node
                     if (isLabelVisible) {
                         var labels = labelsGroup
-                            .selectAll(".labels")
+                            .selectAll(".text-labels")
                             .data(nodes.filter(n => links.some(l => l.source === d && l.target === n || l.target === d && l.source === n)))
                             .join("text")
                             .text((d) => d.id)
-                            .attr("class", "labels")
+                            .attr("class", "text-labels")
                             .attr('x', (d) => d.x)
                             .attr('y', (d) => d.y - nodeRadiusScale(d.bc) - 4)
                     }
@@ -172,7 +137,7 @@
                     // Remove tooltip
                     tooltipGroup.style("opacity", 0);
                     // Remove node labels
-                    if (isLabelVisible) labelsGroup.selectAll(".labels").remove()
+                    if (isLabelVisible) labelsGroup.selectAll(".text-labels").remove()
                 })
 
             // Handle the force-directed layout    
@@ -193,6 +158,8 @@
                 .on("tick", ticked)
                 .on("end", function (event) {
                     isForceDirectedAnimationOver = true;
+                    document.getElementById("spinner").style.display = "none";
+                    container.style.opacity = 1;
                 })
 
             function ticked() {
@@ -227,13 +194,14 @@
         });
 
     </script>
-
-
-
 </head>
 
 <body>
+    <a href="index.html" class="back-button">Back to Index</a>
     <div id="container"></div>
+    <div id="spinner">
+        <span>force-directed graph layout running...</span>
+    </div>
 </body>
 
 </html>

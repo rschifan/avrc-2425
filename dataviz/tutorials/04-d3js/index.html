@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3.js Network Visualization Examples</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: #2c3e50;
+            margin-top: 30px;
+        }
+
+        .example-card {
+            background-color: #f9f9f9;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .example-card h3 {
+            margin-top: 0;
+            color: #3498db;
+        }
+
+        .example-card p {
+            margin-bottom: 10px;
+        }
+
+        .example-link {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 8px 15px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .example-link:hover {
+            background-color: #2980b9;
+        }
+
+        .features {
+            margin-top: 10px;
+        }
+
+        .feature {
+            display: inline-block;
+            background-color: #eee;
+            padding: 3px 10px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>D3.js Network Visualization Examples</h1>
+
+    <p>This page contains a collection of D3.js examples that demonstrate different features and techniques for network
+        visualization, organized in increasing order of complexity.</p>
+
+    <h2>Game of Thrones Network Visualization Series</h2>
+    <p>This series of examples builds upon a Game of Thrones character network, gradually adding more features and
+        complexity.</p>
+
+    <div class="example-card">
+        <h3>1. Basic Network Visualization</h3>
+        <p>A simple force-directed graph layout for visualizing the Game of Thrones character network.</p>
+        <div class="features">
+            <span class="feature">Basic D3.js</span>
+            <span class="feature">Force-directed Layout</span>
+            <span class="feature">Node & Link Rendering</span>
+            <span class="feature">Zoom Functionality</span>
+        </div>
+        <p><a href="got_v1_base.html" class="example-link">View Example</a></p>
+    </div>
+
+    <div class="example-card">
+        <h3>2. Network with Events</h3>
+        <p>Adds interactivity to the network through mouse events, allowing users to highlight connections when hovering
+            over nodes.</p>
+        <div class="features">
+            <span class="feature">Event Handling</span>
+            <span class="feature">Hover Effects</span>
+            <span class="feature">Connection Highlighting</span>
+        </div>
+        <p><a href="got_v2_events.html" class="example-link">View Example</a></p>
+    </div>
+
+    <div class="example-card">
+        <h3>3. Network with Basic Labels</h3>
+        <p>Incorporates node labels that appear when hovering, improving information display.</p>
+        <div class="features">
+            <span class="feature">Text Labels</span>
+            <span class="feature">Dynamic Text Display</span>
+            <span class="feature">Tooltips</span>
+        </div>
+        <p><a href="got_v3_labels.html" class="example-link">View Example</a></p>
+    </div>
+
+    <div class="example-card">
+        <h3>4. Network with Enhanced Labels</h3>
+        <p>Improves label presentation with better formatting and styling for better readability.</p>
+        <div class="features">
+            <span class="feature">Advanced Labels</span>
+            <span class="feature">Foreign Objects</span>
+            <span class="feature">HTML in SVG</span>
+            <span class="feature">Styled Text</span>
+        </div>
+        <p><a href="got_v5_labels.html" class="example-link">View Example</a></p>
+    </div>
+
+    <div class="example-card">
+        <h3>5. Interactive Network with Advanced Features</h3>
+        <p>The most advanced example with click-to-focus functionality, reorganizing the network layout on demand, and
+            sophisticated labeling.</p>
+        <div class="features">
+            <span class="feature">Click Interactions</span>
+            <span class="feature">Dynamic Layout Changes</span>
+            <span class="feature">Transitions & Animations</span>
+            <span class="feature">Complex State Management</span>
+            <span class="feature">Loading Animation</span>
+        </div>
+        <p><a href="got_v6_labels.html" class="example-link">View Example</a></p>
+    </div>
+
+    <div class="example-card">
+        <h3>6. Network with Community Detection</h3>
+        <p>Visualizes community structures within the network using convex hull visualization techniques.</p>
+        <div class="features">
+            <span class="feature">Community Detection</span>
+            <span class="feature">Convex Hull</span>
+            <span class="feature">Path Creation</span>
+            <span class="feature">Group Highlighting</span>
+        </div>
+        <p><a href="got_v4_communities.html" class="example-link">View Example</a></p>
+    </div>
+
+    <h2>Advanced D3.js Techniques</h2>
+
+    <div class="example-card">
+        <h3>Edge Bundling Example</h3>
+        <p>A sophisticated example demonstrating edge bundling techniques for flight data visualization across the
+            United States.</p>
+        <div class="features">
+            <span class="feature">GeoJSON & TopoJSON</span>
+            <span class="feature">Map Projections</span>
+            <span class="feature">Edge Bundling</span>
+            <span class="feature">Data Filtering</span>
+            <span class="feature">Geographic Visualization</span>
+        </div>
+        <p><a href="edge_bundling_example/index.html" class="example-link">View Example</a></p>
+    </div>
+
+    <footer style="margin-top: 50px; border-top: 1px solid #eee; padding-top: 20px; color: #777; font-size: 0.9em;">
+        <p>Complex Networks Course - Data Visualization Module</p>
+    </footer>
+</body>
+
+</html>

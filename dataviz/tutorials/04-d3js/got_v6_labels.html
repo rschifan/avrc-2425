@@ -1,68 +1,13 @@
 <html>
 
 <head>
-
-    <style>
-        body,
-        html {
-            padding: 0px;
-            margin: 0px;
-            background-color: gray;
-            font-family: Arial, sans-serif;
-        }
-
-        #container {
-            width: 100%;
-            height: 100%;
-            opacity: 0.1;
-        }
-
-        #spinner {
-            z-index: 100;
-            position: absolute;
-            top: 50%;
-            width: 100%;
-            text-anchor: middle;
-            text-align: center;
-            font-size: 20px;
-            font-weight: 100;
-        }
-
-
-        .tooltip {
-            paint-order: stroke;
-            font-weight: bold;
-            font-size: 20px;
-            text-anchor: middle;
-            pointer-events: none;
-            stroke: #222;
-            stroke-width: 10px;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            fill: white;
-        }
-
-        .labels {
-            pointer-events: none;
-        }
-
-        .labels div {
-            text-align: start;
-            font-size: 12px;
-            font-weight: 900;
-            color: #222;
-            border-radius: 3px;
-            border: solid 2px #222;
-            padding: 0px;
-            padding-left: 2px;
-            margin: 0px;
-        }
-    </style>
-
-
+    <link rel="stylesheet" href="css/got_styles.css">
     <script type="module">
-
         import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+
+        // Ensure spinner is visible before loading starts
+        document.getElementById("spinner").style.display = "block";
+        document.getElementById("container").style.opacity = 0.1;
 
         const width = container.clientWidth;
         const height = container.clientHeight;
@@ -253,21 +198,21 @@
                             .transition()
                             .duration(1000)
                             .attr("cx", x0)
-                            .attr("cy", (d, i) => - y0 + i * bandwidth)
+                            .attr("cy", (d, i) => -y0 + i * bandwidth)
                             .on("end", function () {
 
                                 connectedLinks
                                     .attr("x1", -x0)
                                     .attr("x2", x0)
                                     .attr("y1", 0)
-                                    .attr("y2", (d, i) => - y0 + i * bandwidth)
+                                    .attr("y2", (d, i) => -y0 + i * bandwidth)
                                     .transition()
                                     .duration(400)
                                     .style("opacity", 1)
 
                                 tooltipGroup.select("text")
                                     .text(d.id)
-                                    .attr('x', - x0 - nodeRadiusScale(d.bc) - 10)
+                                    .attr('x', -x0 - nodeRadiusScale(d.bc) - 10)
                                     .attr('y', nodeRadiusScale(d.bc) / 2)
                                     .style("text-anchor", "end")
 
@@ -282,7 +227,7 @@
                                     .join("foreignObject")
                                     .attr("class", "labels")
                                     .attr('x', x0 + 2 * margin)
-                                    .attr('y', (d, i) => - y0 + i * bandwidth - 10)
+                                    .attr('y', (d, i) => -y0 + i * bandwidth - 10)
                                     .attr("width", (d) => d.id.length * 10)
                                     .attr("height", 20)
                                     .append("xhtml:div")
@@ -354,11 +299,10 @@
         });
 
     </script>
-
-
 </head>
 
 <body>
+    <a href="index.html" class="back-button">Back to Index</a>
     <div id="container"></div>
     <div id="spinner">
         <span>force-directed graph layout running...</span>

@@ -1,48 +1,13 @@
 <html>
 
 <head>
-
-    <style>
-        body,
-        html {
-            padding: 0px;
-            margin: 0px;
-            background-color: gray;
-            font-family: Arial, sans-serif;
-        }
-
-        #container {
-            width: 100%;
-            height: 100%;
-        }
-
-        .tooltip {
-            paint-order: stroke;
-            font-weight: bold;
-            font-size: 20px;
-            text-anchor: middle;
-            pointer-events: none;
-            stroke: #222;
-            stroke-width: 10px;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            fill: white;
-        }
-
-        .labels {
-            font-size: 12px;
-            font-weight: 100;
-            text-anchor: middle;
-            pointer-events: none;
-            fill: #222;
-
-        }
-    </style>
-
-
+    <link rel="stylesheet" href="css/got_styles.css">
     <script type="module">
-
         import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+
+        // Ensure spinner is visible before loading starts
+        document.getElementById("spinner").style.display = "block";
+        document.getElementById("container").style.opacity = 0.1;
 
         const width = container.getBoundingClientRect().width;
         const height = container.getBoundingClientRect().height;
@@ -212,6 +177,8 @@
                 .on("tick", ticked)
                 .on("end", function (event) {
                     isForceDirectedAnimationOver = true;
+                    document.getElementById("spinner").style.display = "none";
+                    container.style.opacity = 1;
                 })
 
             function ticked() {
@@ -240,10 +207,7 @@
                             .append("path")
                             .datum({ points: hullPoints, community: community })
                             .attr("fill", colors[community])
-                            .attr("stroke", "black")
-                            .attr("stroke-width", 2)
-                            .attr("stroke-linejoin", "round")
-                            .style("opacity", 0.5)
+                            .attr("class", "community-path")
                             .attr("d", d => d3.line().curve(d3.curveCatmullRomClosed)(d.points));
                     }
                 }
@@ -271,13 +235,14 @@
         });
 
     </script>
-
-
-
 </head>
 
 <body>
+    <a href="index.html" class="back-button">Back to Index</a>
     <div id="container"></div>
+    <div id="spinner">
+        <span>force-directed graph layout running...</span>
+    </div>
 </body>
 
 </html>
