@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3 Scales</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="css/d3-examples.css">
+</head>
+
+<body>
+    <h1>Example 1: D3 Scales</h1>
+
+    <div class="explanation">
+        <p>This example demonstrates the fundamental concept of <strong>scales</strong> in D3.js.</p>
+        <p>D3 scales map input values (domain) to output values (range). You can switch between:</p>
+        <ul>
+            <li><strong>Linear scales</strong>: map continuous data with uniform intervals</li>
+            <li><strong>Log scales</strong>: map continuous data with logarithmic transformation</li>
+            <li><strong>Band scales</strong>: distribute categorical data evenly across a range</li>
+        </ul>
+        <p>Use the radio buttons to see how different scale types transform the same dataset.</p>
+    </div>
+
+    <h2>Data Visualization with Different Scales</h2>
+    <div class="scale-control">
+        <label><input type="radio" name="scaleType" value="linear" checked> Linear Scale (Scatter Plot)</label>
+        <label><input type="radio" name="scaleType" value="log"> Log Scale (Scatter Plot)</label>
+        <label><input type="radio" name="scaleType" value="band"> Band Scale (Bar Chart)</label>
+    </div>
+    <div class="container" id="visualization-container"></div>
+
+    <a href="index.html" class="btn">Back to Examples</a>
+
+    <script>
+        const dataset = [
+            { x: 10, y: 20 },
+            { x: 20, y: 35 },
+            { x: 30, y: 15 },
+            { x: 40, y: 25 },
+            { x: 50, y: 45 },
+            { x: 60, y: 30 },
+            { x: 70, y: 40 },
+            { x: 80, y: 10 },
+            { x: 90, y: 50 }
+        ];
+
+        const width = 700;
+        const height = 400;
+        const margin = { top: 60, right: 60, bottom: 60, left: 70 };
+        const innerWidth = width - margin.left - margin.right;
+        const innerHeight = height - margin.top - margin.bottom;
+        const fixedRadius = 6;
+
+        function createSvgContainer(containerId) {
+            const svg = d3.select(containerId)
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .append("g")
+                .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+            svg.append("rect")
+                .attr("width", innerWidth)
+                .attr("height", innerHeight)
+                .attr("fill", "#f8f9fa");
+
+            return svg;
+        }
+
+        function createYScale(data, type = 'linear') {
+            if (type === 'log') {
+                return d3.scaleLog()
+                    .domain([d3.min(data, d => d.y) || 1, d3.max(data, d => d.y)])
+                    .range([innerHeight, 0]);
+            }
+
+            return d3.scaleLinear()
+                .domain([0, d3.max(data, d => d.y)])
+                .nice()
+                .range([innerHeight, 0]);
+        }
+
+        function createXScale(data, type = 'linear') {
+            if (type === 'band') {
+                return d3.scaleBand()
+                    .domain(data.map(d => d.x))
+                    .range([0, innerWidth])
+                    .padding(0.2);
+            }
+
+            if (type === 'log') {
+                return d3.scaleLog()
+                    .domain([d3.min(data, d => d.x) || 1, d3.max(data, d => d.x)])
+                    .range([0, innerWidth]);
+            }
+
+            return d3.scaleLinear()
+                .domain([0, d3.max(data, d => d.x)])
+                .nice()
+                .range([0, innerWidth]);
+        }
+
+        function createAxes(svg, xScale, yScale) {
+            svg.append("g")
+                .attr("class", "axis")
+                .attr("transform", `translate(0, ${innerHeight})`)
+                .call(d3.axisBottom(xScale));
+
+            svg.append("g")
+                .attr("class", "axis")
+                .call(d3.axisLeft(yScale));
+        }
+
+        function createVisualization(data, containerId, scaleType = 'linear') {
+
+            d3.select(containerId).html("");
+
+            const svg = createSvgContainer(containerId);
+            const xScale = createXScale(data, scaleType);
+            const yScale = createYScale(data, scaleType === 'band' ? 'linear' : scaleType);
+
+            createAxes(svg, xScale, yScale);
+
+            if (scaleType === 'band') {
+
+                svg.selectAll("rect")
+                    .data(data)
+                    .join("rect")
+                    .attr("x", d => xScale(d.x))
+                    .attr("y", d => yScale(d.y))
+                    .attr("width", xScale.bandwidth())
+                    .attr("height", d => innerHeight - yScale(d.y))
+                    .style("fill", "steelblue")
+                    .style("stroke", "black")
+                    .style("stroke-width", 1)
+                    .style("opacity", 0.7);
+
+            } else {
+
+                svg.selectAll("circle")
+                    .data(data)
+                    .join("circle")
+                    .attr("cx", d => xScale(d.x))
+                    .attr("cy", d => yScale(d.y))
+                    .attr("r", fixedRadius)
+                    .style("fill", "steelblue")
+                    .style("stroke", "black")
+                    .style("stroke-width", 1)
+                    .style("opacity", 0.7);
+            }
+
+            return { svg, xScale, yScale };
+        }
+
+        createVisualization(dataset, "#visualization-container", "linear");
+
+        document.querySelectorAll('input[name="scaleType"]').forEach(radio => {
+            radio.addEventListener('change', function () {
+                createVisualization(dataset, "#visualization-container", this.value);
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,137 @@
+:root {
+    /* Color variables */
+    --color-background: gray;
+    --color-text: #222;
+    --color-text-light: white;
+    --color-stroke: #222;
+    --color-border: #222;
+
+    /* Button colors */
+    --color-button-bg: rgba(255, 255, 255, 0.05);
+    --color-button-bg-hover: rgba(255, 255, 255, 0.2);
+
+    /* Typography */
+    --font-family-base: Arial, sans-serif;
+    --font-size-small: 12px;
+    --font-size-medium: 14px;
+    --font-size-large: 20px;
+    --font-weight-light: 100;
+    --font-weight-normal: 400;
+    --font-weight-bold: 900;
+
+    /* Spacing */
+    --spacing-small: 5px;
+    --spacing-medium: 10px;
+
+    /* Effects */
+    --opacity-dim: 0.1;
+    --opacity-medium: 0.5;
+    --opacity-full: 1;
+    --border-radius: 4px;
+    --transition-speed: 0.3s;
+
+    /* Stroke properties */
+    --stroke-width-small: 2px;
+    --stroke-width-medium: 5px;
+    --stroke-width-large: 10px;
+}
+
+/* Base Styles */
+body,
+html {
+    padding: 0;
+    margin: 0;
+    background-color: var(--color-background);
+    font-family: var(--font-family-base);
+}
+
+#container {
+    width: 100%;
+    height: 100%;
+    opacity: var(--opacity-dim);
+}
+
+/* Loading Spinner */
+#spinner {
+    z-index: 100;
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    text-anchor: middle;
+    text-align: center;
+    font-size: var(--font-size-large);
+    font-weight: var(--font-weight-light);
+}
+
+/* Navigation */
+.back-button {
+    position: fixed;
+    top: var(--spacing-medium);
+    left: var(--spacing-medium);
+    background-color: var(--color-button-bg);
+    color: var(--color-text);
+    border: none;
+    border-radius: var(--border-radius);
+    padding: var(--spacing-small) var(--spacing-medium);
+    font-size: var(--font-size-medium);
+    cursor: pointer;
+    text-decoration: none;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    font-weight: var(--font-weight-light);
+    transition: background-color var(--transition-speed);
+}
+
+.back-button:hover {
+    background-color: var(--color-button-bg-hover);
+}
+
+/* Tooltip Styles */
+.tooltip {
+    paint-order: stroke;
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-large);
+    text-anchor: middle;
+    pointer-events: none;
+    stroke: var(--color-stroke);
+    stroke-width: var(--stroke-width-large);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: var(--color-text-light);
+}
+
+/* Basic Labels (v3) */
+.text-labels {
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-light);
+    text-anchor: middle;
+    pointer-events: none;
+    fill: var(--color-text);
+}
+
+/* Enhanced Labels (v5+) */
+.labels {
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-bold);
+    text-anchor: middle;
+    pointer-events: none;
+    fill: var(--color-text);
+}
+
+.labels div {
+    text-align: center;
+    color: var(--color-text);
+    border-radius: var(--border-radius);
+    border: solid var(--stroke-width-small) var(--color-border);
+    padding-top: 1px;
+    padding-bottom: 1px;
+}
+
+/* Community Visualization (v4) */
+.community-path {
+    opacity: var(--opacity-medium);
+    stroke: black;
+    stroke-width: var(--stroke-width-small);
+    stroke-linejoin: round;
+}

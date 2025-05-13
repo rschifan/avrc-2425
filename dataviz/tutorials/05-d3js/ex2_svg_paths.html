@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3 Path Generators</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="css/d3-examples.css">
+</head>
+
+<body>
+    <h1>Example 3: SVG Paths and Path Generators</h1>
+
+    <div class="explanation">
+        <p>This example demonstrates <strong>SVG path elements</strong> and <strong>D3's path generators</strong>.</p>
+        <p>SVG paths are powerful drawing elements that can create complex shapes with a single element. D3 provides
+            generators to easily create path strings from data:</p>
+        <ul>
+            <li><strong>Line generators</strong>: Create lines connecting data points</li>
+            <li><strong>Area generators</strong>: Create filled areas between a baseline and data points</li>
+            <li><strong>Curve interpolations</strong>: Control how points are connected (linear, curved, etc.)</li>
+        </ul>
+        <p>Use the radio buttons to switch between different path types and curve interpolations.</p>
+    </div>
+
+    <h2>Data Visualization with Path Generators</h2>
+
+    <div class="explanation">
+        <h3>Path Type</h3>
+        <p>Choose how data should be visualized:</p>
+        <ul>
+            <li><strong>Line:</strong> Connects points with a single stroke</li>
+            <li><strong>Area:</strong> Creates a filled shape from the baseline to the points</li>
+            <li><strong>Step:</strong> Creates stair-like paths between points</li>
+        </ul>
+    </div>
+    <div class="scale-control">
+        <label><input type="radio" name="pathType" value="line" checked> Line</label>
+        <label><input type="radio" name="pathType" value="area"> Area</label>
+        <label><input type="radio" name="pathType" value="step"> Step</label>
+    </div>
+
+    <div class="explanation">
+        <h3>Curve Interpolation</h3>
+        <p>Choose how points are connected:</p>
+        <ul>
+            <li><strong>Linear:</strong> Straight lines between points</li>
+            <li><strong>Monotone:</strong> Smooth curves that preserve monotonicity (no overshooting)</li>
+            <li><strong>Natural:</strong> Natural cubic splines with smooth transitions</li>
+            <li><strong>Basis:</strong> B-spline interpolation with smoother curves</li>
+        </ul>
+    </div>
+    <div class="scale-control">
+        <label><input type="radio" name="curveType" value="linear" checked> Linear</label>
+        <label><input type="radio" name="curveType" value="monotone"> Monotone</label>
+        <label><input type="radio" name="curveType" value="natural"> Natural</label>
+        <label><input type="radio" name="curveType" value="basis"> Basis</label>
+    </div>
+    <div class="container" id="visualization-container"></div>
+
+    <a href="index.html" class="btn">Back to Examples</a>
+
+    <script>
+        const dataset = [
+            { x: 0, y: 30 },
+            { x: 10, y: 20 },
+            { x: 20, y: 35 },
+            { x: 30, y: 15 },
+            { x: 40, y: 25 },
+            { x: 50, y: 45 },
+            { x: 60, y: 30 },
+            { x: 70, y: 40 },
+            { x: 80, y: 10 },
+            { x: 90, y: 50 },
+            { x: 100, y: 30 }
+        ];
+
+        const width = 700;
+        const height = 400;
+        const margin = { top: 60, right: 60, bottom: 60, left: 70 };
+        const innerWidth = width - margin.left - margin.right;
+        const innerHeight = height - margin.top - margin.bottom;
+        const pointRadius = 4;
+
+        // Initialize variables to store current selections
+        let currentPathType = "line";
+        let currentCurveType = "linear";
+
+        function createSvgContainer(containerId) {
+            const svg = d3.select(containerId)
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .append("g")
+                .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+            svg.append("rect")
+                .attr("width", innerWidth)
+                .attr("height", innerHeight)
+                .attr("fill", "#f8f9fa");
+
+            return svg;
+        }
+
+        function createScales(data) {
+            const xScale = d3.scaleLinear()
+                .domain([0, d3.max(data, d => d.x)])
+                .nice()
+                .range([0, innerWidth]);
+
+            const yScale = d3.scaleLinear()
+                .domain([0, d3.max(data, d => d.y)])
+                .nice()
+                .range([innerHeight, 0]);
+
+            return { xScale, yScale };
+        }
+
+        function createAxes(svg, xScale, yScale) {
+            svg.append("g")
+                .attr("class", "axis")
+                .attr("transform", `translate(0, ${innerHeight})`)
+                .call(d3.axisBottom(xScale));
+
+            svg.append("g")
+                .attr("class", "axis")
+                .call(d3.axisLeft(yScale));
+        }
+
+        // Get the D3 curve function based on selected curve type
+        function getCurveFunction(curveType) {
+            const curveFunctions = {
+                linear: d3.curveLinear,
+                monotone: d3.curveMonotoneX,
+                natural: d3.curveNatural,
+                basis: d3.curveBasis
+            };
+            return curveFunctions[curveType] || d3.curveLinear;
+        }
+
+        function createPathGenerator(pathType, curveType, scales) {
+            const { xScale, yScale } = scales;
+            const curveFunction = getCurveFunction(curveType);
+
+            // Create the appropriate path generator based on type
+            switch (pathType) {
+                case 'area':
+                    return d3.area()
+                        .x(d => xScale(d.x))
+                        .y0(innerHeight)
+                        .y1(d => yScale(d.y))
+                        .curve(curveFunction);
+                case 'step':
+                    return d3.line()
+                        .x(d => xScale(d.x))
+                        .y(d => yScale(d.y))
+                        .curve(d3.curveStep);
+                case 'line':
+                default:
+                    return d3.line()
+                        .x(d => xScale(d.x))
+                        .y(d => yScale(d.y))
+                        .curve(curveFunction);
+            }
+        }
+
+        function createVisualization(data, containerId, pathType, curveType) {
+            // Clear the container
+            d3.select(containerId).html("");
+
+            const svg = createSvgContainer(containerId);
+            const scales = createScales(data);
+            const { xScale, yScale } = scales;
+
+            createAxes(svg, xScale, yScale);
+
+            // Create path generator
+            const pathGenerator = createPathGenerator(pathType, curveType, scales);
+
+            // Draw the path
+            svg.append("path")
+                .datum(data)
+                .attr("class", "path")
+                .attr("d", pathGenerator)
+                .attr("fill", pathType === "area" ? "steelblue" : "none")
+                .attr("opacity", pathType === "area" ? 0.6 : 1)
+                .attr("stroke", "steelblue")
+                .attr("stroke-width", 2);
+
+            // Draw points to show the individual data points
+            svg.selectAll("circle")
+                .data(data)
+                .join("circle")
+                .attr("cx", d => xScale(d.x))
+                .attr("cy", d => yScale(d.y))
+                .attr("r", pointRadius)
+                .attr("fill", "white")
+                .attr("stroke", "steelblue")
+                .attr("stroke-width", 1.5);
+
+            return { svg, xScale, yScale };
+        }
+
+        createVisualization(dataset, "#visualization-container", currentPathType, currentCurveType);
+
+        // Event listeners for radio buttons
+        document.querySelectorAll('input[name="pathType"]').forEach(radio => {
+            radio.addEventListener('change', function () {
+                currentPathType = this.value;
+                createVisualization(dataset, "#visualization-container", currentPathType, currentCurveType);
+            });
+        });
+
+        document.querySelectorAll('input[name="curveType"]').forEach(radio => {
+            radio.addEventListener('change', function () {
+                currentCurveType = this.value;
+                createVisualization(dataset, "#visualization-container", currentPathType, currentCurveType);
+            });
+        });
+    </script>
+</body>
+
+</html>

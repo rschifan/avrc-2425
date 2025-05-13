@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3 Basic SVG</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="css/d3-examples.css">
+</head>
+
+<body>
+    <h1>Example 1: Basic Data-Driven SVG</h1>
+
+    <div class="explanation">
+        <p>This example demonstrates the core concept of <strong>data binding</strong> in D3.js.</p>
+        <p>Data binding connects your data to visual elements. In this basic example:</p>
+        <ul>
+            <li>Each data point creates a circle in the SVG</li>
+            <li>The x position comes from the data's x value</li>
+            <li>The y position comes from the data's y value</li>
+            <li>The circle radius comes from the data's value</li>
+        </ul>
+        <p>No scales or axes are used - data values are mapped directly to pixel positions.</p>
+    </div>
+
+    <div class="container" id="visualization-container"></div>
+
+    <a href="index.html" class="btn">Back to Examples</a>
+
+    <script>
+        // Simple dataset with x, y positions and a value for circle size
+        const dataset = [
+            { x: 100, y: 80, value: 20 },
+            { x: 200, y: 150, value: 15 },
+            { x: 300, y: 100, value: 25 },
+            { x: 400, y: 200, value: 10 },
+            { x: 500, y: 80, value: 30 },
+            { x: 150, y: 250, value: 18 },
+            { x: 250, y: 180, value: 12 },
+            { x: 350, y: 150, value: 22 },
+            { x: 450, y: 120, value: 16 }
+        ];
+
+        // SVG dimensions
+        const width = 700;
+        const height = 400;
+        const margin = { top: 40, right: 40, bottom: 40, left: 40 };
+        const innerWidth = width - margin.left - margin.right;
+        const innerHeight = height - margin.top - margin.bottom;
+
+        // Create SVG container
+        const svg = d3.select("#visualization-container")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .append("g")
+            .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+        // Add background rectangle to visualize the drawing area
+        svg.append("rect")
+            .attr("width", innerWidth)
+            .attr("height", innerHeight)
+            .attr("fill", "#f8f9fa")
+            .attr("stroke", "#dee2e6")
+            .attr("stroke-width", 1);
+
+        // Create circles based on data
+        svg.selectAll("circle")
+            .data(dataset)
+            .join("circle")
+            .attr("cx", d => d.x)
+            .attr("cy", d => d.y)
+            .attr("r", d => d.value)
+            .style("fill", "steelblue")
+            .style("stroke", "black")
+            .style("stroke-width", 1)
+            .style("opacity", 0.7);
+
+    </script>
+</body>
+
+</html>

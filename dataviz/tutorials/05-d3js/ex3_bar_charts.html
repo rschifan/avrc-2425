@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3 Bar Charts</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="css/d3-examples.css">
+    <style>
+        /* Remove the previous legend styles that used div elements */
+    </style>
+</head>
+
+<body>
+    <h1>Example 4: Bar Charts & Stacked Bar Charts</h1>
+
+    <div class="explanation">
+        <p>This example demonstrates how to create <strong>bar charts</strong> and <strong>stacked bar charts</strong>
+            using D3.js.</p>
+        <p>Bar charts are excellent for comparing discrete categories of data:</p>
+        <ul>
+            <li><strong>Simple bar charts</strong>: Compare single values across categories</li>
+            <li><strong>Stacked bar charts</strong>: Show composition of each category with multiple sub-values</li>
+            <li><strong>Grouped bar charts</strong>: Compare multiple series of data side by side</li>
+        </ul>
+        <p>Use the radio buttons to switch between chart types.</p>
+    </div>
+
+    <h2>Bar Chart Visualization</h2>
+
+    <div class="explanation">
+        <h3>Chart Type</h3>
+        <p>Choose how to display the data:</p>
+        <ul>
+            <li><strong>Simple:</strong> Shows total sales for each product category</li>
+            <li><strong>Stacked:</strong> Shows sales breakdown by region for each product category</li>
+        </ul>
+    </div>
+    <div class="scale-control">
+        <label><input type="radio" name="chartType" value="simple" checked> Simple Bar Chart</label>
+        <label><input type="radio" name="chartType" value="stacked"> Stacked Bar Chart</label>
+    </div>
+    <div class="container" id="visualization-container"></div>
+
+    <a href="index.html" class="btn">Back to Examples</a>
+
+    <script>
+        // Sample dataset for bar charts - sales by product category and region
+        // Modified with more uneven regional distribution for visual interest
+        const dataset = [
+            { category: "Electronics", total: 420, regions: { North: 190, South: 40, East: 150, West: 40 } },
+            { category: "Clothing", total: 380, regions: { North: 50, South: 220, East: 30, West: 80 } },
+            { category: "Food", total: 520, regions: { North: 70, South: 110, East: 290, West: 50 } },
+            { category: "Books", total: 350, regions: { North: 120, South: 30, East: 20, West: 180 } },
+            { category: "Home", total: 450, regions: { North: 200, South: 180, East: 40, West: 30 } }
+        ];
+
+        // Use D3's built-in color scheme instead of manual colors
+        const colorScale = d3.scaleOrdinal(d3.schemeSet2);
+
+        // SVG dimensions
+        const width = 700;
+        const height = 400;
+        const margin = { top: 60, right: 60, bottom: 60, left: 70 };
+        const innerWidth = width - margin.left - margin.right;
+        const innerHeight = height - margin.top - margin.bottom;
+
+        function createSvgContainer(containerId) {
+            const svg = d3.select(containerId)
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .append("g")
+                .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+            svg.append("rect")
+                .attr("width", innerWidth)
+                .attr("height", innerHeight)
+                .attr("fill", "#f8f9fa");
+
+            return svg;
+        }
+
+        function createSimpleBarChart(data, containerId) {
+            // Clear the container
+            d3.select(containerId).html("");
+
+            const svg = createSvgContainer(containerId);
+
+            // Create scales
+            const xScale = d3.scaleBand()
+                .domain(data.map(d => d.category))
+                .range([0, innerWidth])
+                .padding(0.2);
+
+            const yScale = d3.scaleLinear()
+                .domain([0, d3.max(data, d => d.total)])
+                .nice()
+                .range([innerHeight, 0]);
+
+            // Create axes
+            svg.append("g")
+                .attr("class", "axis")
+                .attr("transform", `translate(0, ${innerHeight})`)
+                .call(d3.axisBottom(xScale));
+
+            svg.append("g")
+                .attr("class", "axis")
+                .call(d3.axisLeft(yScale));
+
+            // Create bars
+            svg.selectAll(".bar")
+                .data(data)
+                .join("rect")
+                .attr("class", "bar")
+                .attr("x", d => xScale(d.category))
+                .attr("y", d => yScale(d.total))
+                .attr("width", xScale.bandwidth())
+                .attr("height", d => innerHeight - yScale(d.total))
+                .attr("fill", "#3498db")
+                .attr("stroke", "#2980b9")
+                .attr("stroke-width", 1);
+
+            return svg;
+        }
+
+        function createStackedBarChart(data, containerId) {
+            // Clear the container
+            d3.select(containerId).html("");
+
+            const svg = createSvgContainer(containerId);
+
+            // Convert data for stacked layout
+            const regions = Object.keys(data[0].regions);
+            const stackedData = [];
+
+            data.forEach(item => {
+                const entry = { category: item.category };
+                regions.forEach(region => {
+                    entry[region] = item.regions[region];
+                });
+                stackedData.push(entry);
+            });
+
+            // Create stack generator
+            const stack = d3.stack()
+                .keys(regions);
+
+            const series = stack(stackedData);
+
+            // Create scales
+            const xScale = d3.scaleBand()
+                .domain(data.map(d => d.category))
+                .range([0, innerWidth])
+                .padding(0.2);
+
+            const yScale = d3.scaleLinear()
+                .domain([0, d3.max(data, d => d.total)])
+                .nice()
+                .range([innerHeight, 0]);
+
+            // Create axes
+            svg.append("g")
+                .attr("class", "axis")
+                .attr("transform", `translate(0, ${innerHeight})`)
+                .call(d3.axisBottom(xScale));
+
+            svg.append("g")
+                .attr("class", "axis")
+                .call(d3.axisLeft(yScale));
+
+            // Create stacked bars
+            svg.append("g")
+                .selectAll("g")
+                .data(series)
+                .join("g")
+                .attr("fill", (d, i) => colorScale(i))
+                .selectAll("rect")
+                .data(d => d)
+                .join("rect")
+                .attr("x", d => xScale(d.data.category))
+                .attr("y", d => yScale(d[1]))
+                .attr("height", d => yScale(d[0]) - yScale(d[1]))
+                .attr("width", xScale.bandwidth())
+                .attr("stroke", "white")
+                .attr("stroke-width", 0.5);
+
+
+
+            // Create legend in the top margin, centered
+            const legendGroup = svg.append("g")
+                .attr("class", "legend")
+                .attr("transform", `translate(${innerWidth / 2}, -20)`);
+
+            const legendWidth = regions.length * 80;
+            const legendStartX = -legendWidth / 2;
+
+            regions.forEach((region, i) => {
+                const legendItem = legendGroup.append("g")
+                    .attr("transform", `translate(${legendStartX + i * 80}, 0)`);
+
+                legendItem.append("rect")
+                    .attr("width", 15)
+                    .attr("height", 15)
+                    .attr("fill", colorScale(i));
+
+                legendItem.append("text")
+                    .attr("x", 20)
+                    .attr("y", 12)
+                    .text(region);
+            });
+
+            return svg;
+        }
+
+        // Initial render with simple bar chart
+        createSimpleBarChart(dataset, "#visualization-container");
+
+        // Event listeners for radio buttons
+        document.querySelectorAll('input[name="chartType"]').forEach(radio => {
+            radio.addEventListener('change', function () {
+                if (this.value === 'simple') {
+                    createSimpleBarChart(dataset, "#visualization-container");
+                } else {
+                    createStackedBarChart(dataset, "#visualization-container");
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

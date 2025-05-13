@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3 Joins and Transitions</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="css/d3-examples.css">
+    <style>
+        .circle-enter {
+            opacity: 0;
+        }
+
+        .circle-update {
+            opacity: 1;
+        }
+
+        .circle-exit {
+            opacity: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Example 6: Data Joins and Transitions</h1>
+
+    <div class="explanation">
+        <p>This example demonstrates two core concepts in D3.js:</p>
+        <ol>
+            <li><strong>Data joins</strong> with enter, update, and exit selections</li>
+            <li><strong>Transitions</strong> to animate changes when data updates</li>
+        </ol>
+        <p>Click the buttons below to change the dataset and observe how elements enter, update, or exit with smooth
+            transitions.</p>
+    </div>
+
+    <div class="explanation">
+        <h3>Understanding Data Joins</h3>
+        <p>D3's data join process has three phases:</p>
+        <ul>
+            <li><strong>Enter:</strong> New data items that didn't exist before (green circles appear)</li>
+            <li><strong>Update:</strong> Existing data items that need to be updated (blue circles move to new
+                positions)</li>
+            <li><strong>Exit:</strong> Old data items that no longer exist (red circles fade out)</li>
+        </ul>
+    </div>
+
+    <div class="explanation">
+        <h3>About Transitions</h3>
+        <p>Transitions animate changes to the DOM:</p>
+        <ul>
+            <li>Smoothly interpolate between start and end states</li>
+            <li>Can apply to position, color, size, opacity, and more</li>
+            <li>Make it easier for users to track what's changing</li>
+        </ul>
+    </div>
+
+    <h2>Interactive Demonstration</h2>
+
+    <div class="control-panel">
+        <button id="dataset1-btn" class="btn">Dataset 1 (5 items)</button>
+        <button id="dataset2-btn" class="btn">Dataset 2 (8 items)</button>
+        <button id="dataset3-btn" class="btn">Dataset 3 (3 items)</button>
+    </div>
+
+    <div class="container" id="visualization-container"></div>
+
+    <div class="explanation">
+        <h3>Color Legend</h3>
+        <ul style="list-style-type: none; padding-left: 0;">
+            <li><span style="color: green;">●</span> <strong>Green:</strong> New elements (enter)
+            </li>
+            <li><span style="color: steelblue;">●</span> <strong>Blue:</strong> Updated elements</li>
+            <li><span style="color: red;">●</span> <strong>Red:</strong> Removed elements (exit)</li>
+        </ul>
+    </div>
+
+    <a href="index.html" class="btn">Back to Examples</a>
+
+    <script>
+        const width = 700;
+        const height = 400;
+        const margin = { top: 40, right: 40, bottom: 40, left: 40 };
+        const innerWidth = width - margin.left - margin.right;
+        const innerHeight = height - margin.top - margin.bottom;
+
+        const duration = 500;
+
+        const dataset1 = [
+            { id: "A", x: 100, y: 100, size: 30 },
+            { id: "B", x: 200, y: 150, size: 40 },
+            { id: "C", x: 300, y: 200, size: 25 },
+            { id: "D", x: 400, y: 120, size: 35 },
+            { id: "E", x: 500, y: 250, size: 45 }
+        ];
+
+        const dataset2 = [
+            { id: "A", x: 150, y: 150, size: 20 },
+            { id: "B", x: 250, y: 100, size: 50 },
+            { id: "C", x: 350, y: 250, size: 30 },
+            { id: "F", x: 450, y: 180, size: 25 },
+            { id: "G", x: 120, y: 220, size: 40 },
+            { id: "H", x: 220, y: 280, size: 35 },
+            { id: "I", x: 320, y: 80, size: 45 },
+            { id: "J", x: 520, y: 200, size: 20 }
+        ];
+
+        const dataset3 = [
+            { id: "B", x: 200, y: 200, size: 60 },
+            { id: "F", x: 350, y: 150, size: 45 },
+            { id: "J", x: 500, y: 100, size: 30 }
+        ];
+
+        let currentDataset = dataset1;
+        let previousDataset = [];
+
+        const svg = d3.select("#visualization-container")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .append("g")
+            .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+        svg.append("rect")
+            .attr("width", innerWidth)
+            .attr("height", innerHeight)
+            .attr("fill", "#f8f9fa");
+
+        const key = d => d.id;
+
+        function updateVisualization() {
+            svg.selectAll("circle")
+                .data(currentDataset, key)
+                .join(
+
+                    enter => enter.append("circle")
+                        .attr("cx", d => d.x)
+                        .attr("cy", d => d.y)
+                        .attr("r", 0)
+                        .attr("fill", "green")
+                        .attr("stroke", "black")
+                        .attr("stroke-width", 2)
+                        .transition()
+                        .duration(duration)
+                        .attr("r", d => d.size / 2),
+
+                    update => update
+                        .attr("fill", "steelblue")
+                        .attr("stroke", "black")
+                        .attr("stroke-width", 2)
+                        .transition()
+                        .duration(duration)
+                        .attr("cx", d => d.x)
+                        .attr("cy", d => d.y)
+                        .attr("r", d => d.size / 2),
+
+
+                    exit => exit
+                        .attr("fill", "red")
+                        .transition()
+                        .duration(duration)
+                        .attr("r", 0)
+                        .remove()
+
+
+                );
+
+            previousDataset = [...currentDataset];
+
+            d3.selectAll(".control-panel .btn")
+                .classed("btn-success", false);
+
+            if (currentDataset === dataset1) {
+                d3.select("#dataset1-btn").classed("btn-success", true);
+            } else if (currentDataset === dataset2) {
+                d3.select("#dataset2-btn").classed("btn-success", true);
+            } else {
+                d3.select("#dataset3-btn").classed("btn-success", true);
+            }
+        }
+
+        updateVisualization();
+
+        d3.select("#dataset1-btn").on("click", function () {
+            currentDataset = dataset1;
+            updateVisualization();
+        });
+
+        d3.select("#dataset2-btn").on("click", function () {
+            currentDataset = dataset2;
+            updateVisualization();
+        });
+
+        d3.select("#dataset3-btn").on("click", function () {
+            currentDataset = dataset3;
+            updateVisualization();
+        });
+    </script>
+</body>
+
+</html>

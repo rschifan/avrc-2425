@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3.js Visualization Examples</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: #2c3e50;
+            margin-top: 30px;
+        }
+
+        .example-card {
+            background-color: #f9f9f9;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .example-card h3 {
+            margin-top: 0;
+            color: #3498db;
+        }
+
+        .example-card p {
+            margin-bottom: 10px;
+        }
+
+        .example-link {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 8px 15px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .example-link:hover {
+            background-color: #2980b9;
+        }
+
+        .features {
+            margin-top: 10px;
+        }
+
+        .feature {
+            display: inline-block;
+            background-color: #eee;
+            padding: 3px 10px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+
+        footer {
+            margin-top: 50px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+            color: #777;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>D3.js Visualization Examples</h1>
+
+    <p>This page contains a collection of D3.js examples that demonstrate fundamental visualization concepts and
+        techniques, organized in order of complexity.</p>
+
+    <h2>Basic D3.js Examples</h2>
+
+    <div class="example-card">
+        <h3>1. Basic Data-Driven SVG</h3>
+        <p>A fundamental example showing how to bind data to SVG elements using D3.js, creating a simple visualization
+            of circles.</p>
+        <div class="features">
+            <span class="feature">Core D3.js Concepts</span>
+            <span class="feature">Data Binding</span>
+            <span class="feature">SVG Basics</span>
+            <span class="feature">Circle Elements</span>
+        </div>
+        <p><a href="ex0_basic_svg.html" class="example-link">View Example</a></p>
+    </div>
+
+    <div class="example-card">
+        <h3>2. D3 Scales</h3>
+        <p>Demonstrates the fundamental concept of scales in D3.js with interactive examples of different scale types.
+        </p>
+        <div class="features">
+            <span class="feature">Linear Scales</span>
+            <span class="feature">Log Scales</span>
+            <span class="feature">Band Scales</span>
+            <span class="feature">Interactive Controls</span>
+        </div>
+        <p><a href="ex1_svg_scales.html" class="example-link">View Example</a></p>
+    </div>
+
+    <div class="example-card">
+        <h3>3. SVG Paths and Path Generators</h3>
+        <p>Explores SVG path elements and D3's path generators for creating lines, areas, and curves from data.</p>
+        <div class="features">
+            <span class="feature">Line Generators</span>
+            <span class="feature">Area Generators</span>
+            <span class="feature">Path Interpolation</span>
+            <span class="feature">Curve Types</span>
+        </div>
+        <p><a href="ex2_svg_paths.html" class="example-link">View Example</a></p>
+    </div>
+
+    <div class="example-card">
+        <h3>4. Bar Charts & Stacked Bar Charts</h3>
+        <p>Demonstrates how to create bar charts and stacked bar charts to visualize categorical data and its
+            composition.</p>
+        <div class="features">
+            <span class="feature">Bar Charts</span>
+            <span class="feature">Stacked Charts</span>
+            <span class="feature">Data Composition</span>
+            <span class="feature">Categorical Data</span>
+        </div>
+        <p><a href="ex3_bar_charts.html" class="example-link">View Example</a></p>
+    </div>
+
+    <div class="example-card">
+        <h3>5. Basic Interactivity</h3>
+        <p>Explores fundamental interactive techniques in D3.js including tooltips, hover effects, clicks, and
+            filtering.</p>
+        <div class="features">
+            <span class="feature">Tooltips</span>
+            <span class="feature">Hover Effects</span>
+            <span class="feature">Click Interactions</span>
+            <span class="feature">Data Filtering</span>
+        </div>
+        <p><a href="ex4_basic_interactivity.html" class="example-link">View Example</a></p>
+    </div>
+
+    <div class="example-card">
+        <h3>6. Data Joins and Transitions</h3>
+        <p>Demonstrates D3's enter, update and exit pattern for data binding with smooth animated transitions.</p>
+        <div class="features">
+            <span class="feature">Data Joins</span>
+            <span class="feature">Enter/Update/Exit</span>
+            <span class="feature">Transitions</span>
+            <span class="feature">Animation</span>
+        </div>
+        <p><a href="ex5_joins_transitions.html" class="example-link">View Example</a></p>
+    </div>
+
+    <div class="example-card">
+        <h3>7. Brushing and Linking</h3>
+        <p>Shows how to create coordinated views with brushing and linking between multiple visualizations.</p>
+        <div class="features">
+            <span class="feature">Multiple Views</span>
+            <span class="feature">Brushing</span>
+            <span class="feature">Linking</span>
+            <span class="feature">Interactive Selection</span>
+        </div>
+        <p><a href="ex6_brushing_linking.html" class="example-link">View Example</a></p>
+    </div>
+
+    <footer style="margin-top: 50px; border-top: 1px solid #eee; padding-top: 20px; color: #777; font-size: 0.9em;">
+        <p>&copy; 2023 D3.js Visualization Examples. All rights reserved.</p>
+    </footer>
+
+</body>
+
+</html>

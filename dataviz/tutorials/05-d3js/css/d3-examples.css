@@ -1,0 +1,199 @@
+/* Common styles for all D3.js examples */
+
+/* Basic page layout */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h1 {
+    color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 10px;
+}
+
+h2 {
+    color: #2c3e50;
+    margin-top: 30px;
+}
+
+/* Container for visualizations */
+.container {
+    margin: 20px 0;
+}
+
+/* SVG styling */
+svg {
+    border: 1px solid black;
+}
+
+/* Explanations */
+.explanation {
+    background-color: #f8f9fa;
+    border-left: 4px solid #3498db;
+    padding: 10px 15px;
+    margin: 20px 0;
+}
+
+/* Example cards for index page */
+.example-card {
+    background-color: #f9f9f9;
+    border-left: 4px solid #3498db;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.example-card h3 {
+    margin-top: 0;
+    color: #3498db;
+}
+
+.example-card p {
+    margin-bottom: 10px;
+}
+
+.features {
+    margin-top: 10px;
+}
+
+.feature {
+    display: inline-block;
+    background-color: #eee;
+    padding: 3px 10px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    border-radius: 20px;
+    font-size: 0.9em;
+}
+
+/* Links and buttons */
+.example-link,
+.btn {
+    display: inline-block;
+    background-color: #3498db;
+    color: white;
+    padding: 8px 15px;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+    cursor: pointer;
+    border: none;
+    line-height: 1.5;
+    box-sizing: border-box;
+    font-size: 14px;
+    text-align: center;
+    vertical-align: middle;
+    margin: 0;
+}
+
+.example-link:hover,
+.btn:hover {
+    background-color: #2980b9;
+    color: white;
+    text-decoration: none;
+}
+
+/* Button variations */
+.btn-secondary {
+    background-color: #95a5a6;
+}
+
+.btn-secondary:hover {
+    background-color: #7f8c8d;
+}
+
+.btn-success {
+    background-color: #2ecc71;
+}
+
+.btn-success:hover {
+    background-color: #27ae60;
+}
+
+.btn-danger {
+    background-color: #e74c3c;
+}
+
+.btn-danger:hover {
+    background-color: #c0392b;
+}
+
+.btn-warning {
+    background-color: #f39c12;
+}
+
+.btn-warning:hover {
+    background-color: #d35400;
+}
+
+/* Specific button roles */
+.btn-reset {
+    background-color: #e67e22;
+}
+
+.btn-reset:hover {
+    background-color: #d35400;
+}
+
+.btn-toggle {
+    position: relative;
+}
+
+.btn-toggle.active {
+    background-color: #16a085;
+}
+
+.btn-toggle.active:hover {
+    background-color: #1abc9c;
+}
+
+/* Controls */
+.scale-control {
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: #f5f5f5;
+    border-radius: 5px;
+}
+
+/* Controls layout */
+.control-panel {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.category-filter {
+    margin-bottom: 15px;
+}
+
+/* Chart elements */
+.axis text {
+    font-size: 12px;
+}
+
+/* Bar charts */
+.bar {
+    fill: #3498db;
+}
+
+/* Legend */
+.legend {
+    font-size: 12px;
+}
+
+/* Footer */
+footer {
+    margin-top: 50px;
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+    color: #777;
+    font-size: 0.9em;
+}

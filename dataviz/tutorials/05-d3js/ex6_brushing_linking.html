@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3 Brushing and Linking</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="css/d3-examples.css">
+    <style>
+        .brush .selection {
+            fill: #0074D9;
+            fill-opacity: 0.2;
+            stroke: #0074D9;
+            stroke-width: 1px;
+        }
+
+        .highlighted {
+            fill: #FF851B;
+            stroke: #FF4136;
+            stroke-width: 2px;
+        }
+
+        .views-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin: 20px 0;
+        }
+
+        .view {
+            width: 48%;
+            height: 400px;
+        }
+
+        .view svg {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Example 7: Brushing and Linking</h1>
+
+    <div class="explanation">
+        <p>This example demonstrates <strong>brushing and linking</strong>, a powerful interactive technique in data
+            visualization.</p>
+        <p>Brushing involves selecting a subset of data points in one view, while linking means automatically
+            highlighting the same data in other views.</p>
+        <ul>
+            <li>Try selecting (brushing) a region in the scatterplot on the left</li>
+            <li>Notice how the corresponding bars in the bar chart on the right are highlighted</li>
+            <li>This coordination between views helps users explore relationships in multivariate data</li>
+        </ul>
+    </div>
+
+    <div class="explanation">
+        <h3>Benefits of Brushing and Linking</h3>
+        <ul>
+            <li>Explore relationships between different visual representations of the same data</li>
+            <li>Identify patterns that might be visible in one visualization but not in another</li>
+            <li>Filter large datasets to focus on specific subsets of interest</li>
+        </ul>
+    </div>
+
+    <h2>Coordinated Views</h2>
+
+    <div class="control-panel">
+        <button id="clear-brush-btn" class="btn">Clear Selection</button>
+    </div>
+
+    <div class="views-container">
+        <div class="view" id="scatterplot">
+        </div>
+        <div class="view" id="barchart">
+        </div>
+    </div>
+
+    <a href="index.html" class="btn">Back to Examples</a>
+
+    <script>
+        // ====================================================================
+        // STEP 1: Define shared data and create two linked visualizations
+        // ====================================================================
+        // We start with a single dataset that will be visualized in two ways.
+        // This is the foundation of brushing and linking - multiple views of the same data
+        const dataset = [
+            { id: 1, x: 10, y: 40, category: "A" },
+            { id: 2, x: 20, y: 30, category: "A" },
+            { id: 3, x: 30, y: 60, category: "B" },
+            { id: 4, x: 40, y: 20, category: "B" },
+            { id: 5, x: 50, y: 70, category: "C" },
+            { id: 6, x: 60, y: 10, category: "C" },
+            { id: 7, x: 70, y: 45, category: "D" },
+            { id: 8, x: 80, y: 65, category: "D" },
+            { id: 9, x: 90, y: 25, category: "E" },
+            { id: 10, x: 100, y: 50, category: "E" }
+        ];
+
+        const margin = { top: 30, right: 30, bottom: 50, left: 60 };
+
+        // Get container dimensions
+        const scatterContainer = document.getElementById("scatterplot");
+        const barContainer = document.getElementById("barchart");
+        const width = scatterContainer.clientWidth;
+        const height = scatterContainer.clientHeight;
+        const innerWidth = width - margin.left - margin.right;
+        const innerHeight = height - margin.top - margin.bottom;
+
+        const scatterSvg = d3.select("#scatterplot")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .attr("viewBox", `0 0 ${width} ${height}`)
+            .attr("preserveAspectRatio", "xMinYMin meet")
+            .append("g")
+            .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+        scatterSvg.append("rect")
+            .attr("width", innerWidth)
+            .attr("height", innerHeight)
+            .attr("fill", "#f8f9fa");
+
+        const barSvg = d3.select("#barchart")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .attr("viewBox", `0 0 ${width} ${height}`)
+            .attr("preserveAspectRatio", "xMinYMin meet")
+            .append("g")
+            .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+        barSvg.append("rect")
+            .attr("width", innerWidth)
+            .attr("height", innerHeight)
+            .attr("fill", "#f8f9fa");
+
+
+        const xScaleScatter = d3.scaleLinear()
+            .domain([0, 110])
+            .range([0, innerWidth]);
+
+
+        const yScale = d3.scaleLinear()
+            .domain([0, 80])
+            .range([innerHeight, 0]);
+
+
+        const xScaleBar = d3.scaleBand()
+            .domain(dataset.map(d => d.id))
+            .range([0, innerWidth])
+            .padding(0.2);
+
+        scatterSvg.append("g")
+            .attr("transform", `translate(0, ${innerHeight})`)
+            .call(d3.axisBottom(xScaleScatter));
+
+        scatterSvg.append("g")
+            .call(d3.axisLeft(yScale));
+
+        barSvg.append("g")
+            .attr("transform", `translate(0, ${innerHeight})`)
+            .call(d3.axisBottom(xScaleBar));
+
+        barSvg.append("g")
+            .call(d3.axisLeft(yScale));
+
+        const circles = scatterSvg.selectAll("circle")
+            .data(dataset)
+            .join("circle")
+            .attr("cx", d => xScaleScatter(d.x))
+            .attr("cy", d => yScale(d.y))
+            .attr("r", 6)
+            .attr("fill", "#3498db")
+            .attr("stroke", "#2980b9")
+            .attr("stroke-width", 1)
+            .attr("data-id", d => d.id);
+
+        const bars = barSvg.selectAll("rect.bar")
+            .data(dataset)
+            .join("rect")
+            .attr("class", "bar")
+            .attr("x", d => xScaleBar(d.id))
+            .attr("y", d => yScale(d.y))
+            .attr("width", xScaleBar.bandwidth())
+            .attr("height", d => innerHeight - yScale(d.y))
+            .attr("fill", "#3498db")
+            .attr("stroke", "#2980b9")
+            .attr("stroke-width", 1)
+            .attr("data-id", d => d.id);
+
+        // ====================================================================
+        // STEP 2: Create the brushing functionality
+        // ====================================================================
+        // D3's brush is a built-in interaction component that lets users select regions
+        // The brush object defines:
+        // - the selection area bounds (.extent)
+        // - event handlers for when brushing happens (.on)
+        const brush = d3.brush()
+            .extent([[0, 0], [innerWidth, innerHeight]]) // Define brush boundaries
+            .on("start brush", brushed)                  // During brushing
+            .on("end", brushended);                      // When brushing ends
+
+        // Add the brush to the scatter plot SVG in a new group element
+        // This creates the visual UI for the brush (the selectable overlay)
+        const brushG = scatterSvg.append("g")
+            .attr("class", "brush")
+            .call(brush);
+
+        // Reset button functionality - clears the brush and all highlights
+        d3.select("#clear-brush-btn").on("click", () => {
+            brushG.call(brush.move, null);               // Programmatically clear the brush
+            bars.classed("highlighted", false);          // Remove highlights from bars
+            circles.classed("highlighted", false);       // Remove highlights from circles
+        });
+
+        // ====================================================================
+        // STEP 3: Handle brush events to highlight corresponding elements
+        // ====================================================================
+        // This function is called continuously during brushing
+        function brushed(event) {
+            if (!event.selection) return;  // Exit if there's no selection
+
+            // Get the brush selection coordinates [[x0,y0], [x1,y1]]
+            const [[x0, y0], [x1, y1]] = event.selection;
+
+            // STEP 3A: Find which elements are within the brush selection
+            // We check each circle and see if its coordinates fall within the brush area
+            const selected = circles.filter(d => {
+                const cx = xScaleScatter(d.x);
+                const cy = yScale(d.y);
+                return cx >= x0 && cx <= x1 && cy >= y0 && cy <= y1;
+            });
+
+            // STEP 3B: Get a list of selected data point IDs
+            // This creates the "link" between our two views - we're extracting IDs
+            // from the scatterplot selection that we'll use in the bar chart
+            const selectedIds = selected.data().map(d => d.id);
+
+            // STEP 3C: Highlight linked elements in both views
+            // Apply the "highlighted" class to both scatterplot points and bar chart elements
+            // This is the actual "linking" part - the same data points are highlighted in both views
+            bars.classed("highlighted", d => selectedIds.includes(d.id));
+            circles.classed("highlighted", d => selectedIds.includes(d.id));
+        }
+
+        // Handle what happens when brushing ends
+        function brushended(event) {
+            if (!event.selection) {
+                // If brush is cleared (e.g., by clicking without dragging)
+                // then remove all highlighting
+                bars.classed("highlighted", false);
+                circles.classed("highlighted", false);
+            }
+        }
+
+        // ====================================================================
+        // SUMMARY OF BRUSHING & LINKING PROCESS:
+        // 1. Create multiple visualizations from the same dataset
+        // 2. Add a brush to one visualization
+        // 3. In the brush handler:
+        //    - Determine which items are selected in the brushed view
+        //    - Identify those same data items in other views
+        //    - Apply consistent visual styling to show the connection
+        // 4. Provide UI controls to clear/reset the selection
+        // ====================================================================
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3 Basic Interactivity</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="css/d3-examples.css">
+    <style>
+        :root {
+            --selected-opacity: 1;
+            --selected-stroke: #000000;
+            --selected-stroke-width: 5px;
+            --unselected-opacity: 0.5;
+            --unselected-stroke: #555555;
+            --unselected-stroke-width: 1px;
+            --dimmed-opacity: 0.1;
+            --hover-opacity: 1;
+            --hover-stroke: #ccc;
+            --hover-stroke-width: 3px;
+        }
+
+        .data-point {
+            opacity: var(--unselected-opacity);
+            stroke: var(--unselected-stroke);
+            stroke-width: var(--unselected-stroke-width);
+        }
+
+        .data-point.selected {
+            opacity: var(--selected-opacity);
+            stroke: var(--selected-stroke);
+            stroke-width: var(--selected-stroke-width);
+        }
+
+        .data-point.dimmed {
+            opacity: var(--dimmed-opacity);
+        }
+
+        .data-point.hover {
+            opacity: var(--hover-opacity);
+            stroke: var(--hover-stroke);
+            stroke-width: var(--hover-stroke-width);
+        }
+
+        .tooltip-container {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 8px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Example 5: Basic Interactivity</h1>
+
+    <div class="explanation">
+        <p>This example demonstrates <strong>basic interactivity techniques</strong> in D3.js.</p>
+        <p>Interactivity is crucial for modern web-based data visualizations, allowing users to explore and understand
+            the data better:</p>
+        <ul>
+            <li><strong>Tooltips</strong>: Show additional data on hover</li>
+            <li><strong>Hover effects</strong>: Highlight elements when the mouse is over them</li>
+            <li><strong>Click interactions</strong>: Select elements or trigger actions</li>
+            <li><strong>Filtering controls</strong>: Allow users to focus on specific data subsets</li>
+        </ul>
+        <p>Try hovering over points, clicking them, and using the control buttons to interact with the visualization.
+        </p>
+    </div>
+
+    <h2>Interactive Data Exploration</h2>
+
+    <div class="explanation">
+        <h3>Interaction Controls</h3>
+        <p><strong>Hover</strong> over any circle to see detailed information.</p>
+        <p><strong>Click</strong> on circles to select/deselect them.</p>
+        <p>Use the buttons below to interact with the selection.</p>
+    </div>
+
+    <div class="control-panel">
+        <button id="reset-btn" class="btn">Reset Selection</button>
+        <button id="highlight-btn" class="btn btn-toggle btn-success">Highlight Selected</button>
+    </div>
+
+    <div class="category-filter">
+        <strong>Filter by Category: </strong>
+        <label><input type="checkbox" class="category-checkbox" value="A" checked> Category A</label>
+        <label><input type="checkbox" class="category-checkbox" value="B" checked> Category B</label>
+        <label><input type="checkbox" class="category-checkbox" value="C" checked> Category C</label>
+    </div>
+
+    <div class="container" id="visualization-container"></div>
+
+    <div class="tooltip-container"></div>
+
+    <a href="index.html" class="btn">Back to Examples</a>
+
+    <script>
+        const dataset = [
+            { id: 1, x: 100, y: 100, value: 30, category: "A", label: "Point A1" },
+            { id: 2, x: 200, y: 150, value: 15, category: "B", label: "Point B1" },
+            { id: 3, x: 300, y: 80, value: 25, category: "A", label: "Point A2" },
+            { id: 4, x: 400, y: 220, value: 18, category: "C", label: "Point C1" },
+            { id: 5, x: 500, y: 120, value: 22, category: "B", label: "Point B2" },
+            { id: 6, x: 150, y: 230, value: 28, category: "C", label: "Point C2" },
+            { id: 7, x: 250, y: 70, value: 12, category: "A", label: "Point A3" },
+            { id: 8, x: 350, y: 180, value: 20, category: "B", label: "Point B3" },
+            { id: 9, x: 450, y: 60, value: 35, category: "C", label: "Point C3" }
+        ];
+
+        const width = 700;
+        const height = 400;
+        const margin = { top: 40, right: 40, bottom: 40, left: 40 };
+        const innerWidth = width - margin.left - margin.right;
+        const innerHeight = height - margin.top - margin.bottom;
+
+        let selectedPoints = [];
+        let visibleCategories = ["A", "B", "C"];
+        let highlightActive = false;  // Track highlighting state
+
+        const colorScale = d3.scaleOrdinal()
+            .domain(["A", "B", "C"])
+            .range(["#3498db", "#2ecc71", "#e74c3c"]);
+
+        const svg = d3.select("#visualization-container")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .append("g")
+            .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+        svg.append("rect")
+            .attr("width", innerWidth)
+            .attr("height", innerHeight)
+            .attr("fill", "#f8f9fa");
+
+        const xScale = d3.scaleLinear()
+            .domain([0, d3.max(dataset, d => d.x) * 1.1])
+            .range([0, innerWidth]);
+
+        const yScale = d3.scaleLinear()
+            .domain([0, d3.max(dataset, d => d.y) * 1.1])
+            .range([innerHeight, 0]);
+
+        svg.append("g")
+            .attr("transform", `translate(0, ${innerHeight})`)
+            .call(d3.axisBottom(xScale));
+
+        svg.append("g")
+            .call(d3.axisLeft(yScale));
+
+        const tooltip = d3.select(".tooltip-container");
+
+        function updateVisualization() {
+            svg.selectAll(".data-point").remove();
+
+            const filteredData = dataset.filter(d => visibleCategories.includes(d.category));
+
+            const circles = svg.selectAll(".data-point")
+                .data(filteredData)
+                .join("circle")
+                .attr("class", d => `data-point point-${d.id}`)
+                .attr("cx", d => xScale(d.x))
+                .attr("cy", d => yScale(d.y))
+                .attr("r", d => d.value / 2)
+                .attr("fill", d => colorScale(d.category))
+                .on("mouseover", handleMouseOver)
+                .on("mousemove", handleMouseMove)
+                .on("mouseout", handleMouseOut)
+                .on("click", handleClick);
+
+            circles.each(function (d) {
+                if (selectedPoints.includes(d.id)) {
+                    d3.select(this).classed("selected", true);
+                }
+            });
+
+            // Reapply dimmed class if highlighting is active
+            if (highlightActive && selectedPoints.length > 0) {
+                circles.classed("dimmed", d => !selectedPoints.includes(d.id));
+            }
+        }
+
+        function handleMouseOver(event, d) {
+            const element = d3.select(event.currentTarget);
+
+            // Only apply hover effect if the element is not already selected
+            if (!selectedPoints.includes(d.id)) {
+                element.classed("hover", true);
+            }
+
+            tooltip
+                .style("opacity", 1)
+                .html(`
+                <strong>${d.label}</strong><br/>
+                Category: ${d.category}<br/>
+                Value: ${d.value}<br/>
+                Position: (${d.x}, ${d.y})
+            `);
+        }
+
+        function handleMouseMove(event) {
+            tooltip
+                .style("left", `${event.pageX + 15}px`)
+                .style("top", `${event.pageY - 30}px`);
+        }
+
+        function handleMouseOut(event, d) {
+            // Only remove hover class - no need to check selection status
+            // since we only apply hover to non-selected elements
+            d3.select(event.currentTarget).classed("hover", false);
+            tooltip.style("opacity", 0);
+        }
+
+        function handleClick(event, d) {
+            const element = d3.select(event.currentTarget);
+
+            if (selectedPoints.includes(d.id)) {
+                selectedPoints = selectedPoints.filter(id => id !== d.id);
+                element.classed("selected", false);
+            } else {
+                selectedPoints.push(d.id);
+                element.classed("selected", true);
+            }
+        }
+
+        updateVisualization();
+
+        d3.select("#reset-btn").on("click", () => {
+            selectedPoints = [];
+            highlightActive = false;  // Turn off highlighting
+            svg.selectAll(".data-point")
+                .classed("selected", false)
+                .classed("dimmed", false);  // Remove dimming
+        });
+
+        d3.select("#highlight-btn").on("click", () => {
+            // Toggle highlight state
+            highlightActive = !highlightActive;
+
+            if (highlightActive && selectedPoints.length > 0) {
+                // Apply the dimming if highlighting is active
+                svg.selectAll(".data-point")
+                    .classed("dimmed", d => !selectedPoints.includes(d.id));
+            } else {
+                // Remove dimming when turning off highlight
+                svg.selectAll(".data-point").classed("dimmed", false);
+            }
+
+            // Update button text and toggle active class
+            const button = d3.select("#highlight-btn");
+            button.text(highlightActive ? "Normal View" : "Highlight Selected")
+                .classed("active", highlightActive);
+        });
+
+        d3.selectAll(".category-checkbox").on("change", function () {
+            const category = this.value;
+            if (this.checked) {
+                visibleCategories.push(category);
+            } else {
+                visibleCategories = visibleCategories.filter(c => c !== category);
+            }
+            updateVisualization();
+        });
+    </script>
+</body>
+
+</html>
