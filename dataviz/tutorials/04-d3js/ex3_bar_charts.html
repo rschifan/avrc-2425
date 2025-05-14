@@ -131,10 +131,24 @@
 
             const svg = createSvgContainer(containerId);
 
-            // Convert data for stacked layout
+            // =========================================================================
+            // STACKED LAYOUT EXPLANATION - PART 1: DATA PREPARATION
+            // =========================================================================
+            // For stacked bars, we need to transform our data into a format where each
+            // region's value is a direct property of the category object.
+            // 
+            // Original data format:
+            // {category: "Electronics", total: 420, regions: {North: 190, South: 40,...}}
+            //
+            // Required format for stacking:
+            // {category: "Electronics", North: 190, South: 40, East: 150, West: 40}
+            // =========================================================================
+
+            // Extract all region names from the first data point
             const regions = Object.keys(data[0].regions);
             const stackedData = [];
 
+            // Transform each data item into the required format for stacking
             data.forEach(item => {
                 const entry = { category: item.category };
                 regions.forEach(region => {
@@ -143,11 +157,45 @@
                 stackedData.push(entry);
             });
 
-            // Create stack generator
-            const stack = d3.stack()
-                .keys(regions);
+            // =========================================================================
+            // STACKED LAYOUT EXPLANATION - PART 2: CREATING THE STACK GENERATOR
+            // =========================================================================
+            // D3's stack generator transforms our data into a nested array structure
+            // where each element represents a "layer" of the stack:
+            //
+            // 1. Each layer corresponds to one region (North, South, etc.)
+            // 2. Within each layer, there's an array of values for each category
+            // 3. Each value contains the start and end points [y0, y1] for drawing
+            //    that particular segment of the stacked bar
+            // ==========================================================================
 
+            // Create stack generator - define which properties we want to stack
+            const stack = d3.stack()
+                .keys(regions);  // The properties to be stacked (North, South, East, West)
+
+            // Apply the stack generator to our transformed data
+            // 'series' will contain an array of layers, each representing one region
             const series = stack(stackedData);
+
+            // =========================================================================
+            // STRUCTURE OF RESULTING STACKED DATA (series):
+            //
+            // [
+            //   // First layer (North)
+            //   [
+            //     [0, 190],  // Electronics: starts at 0, ends at 190
+            //     [0, 50],   // Clothing: starts at 0, ends at 50
+            //     // ... more categories
+            //   ],
+            //   // Second layer (South) - starts where North ended
+            //   [
+            //     [190, 230],  // Electronics: starts at 190, ends at 230 (190+40)
+            //     [50, 270],   // Clothing: starts at 50, ends at 270 (50+220)
+            //     // ... more categories
+            //   ],
+            //   // ... more layers (East, West)
+            // ]
+            // =========================================================================
 
             // Create scales
             const xScale = d3.scaleBand()
@@ -170,18 +218,28 @@
                 .attr("class", "axis")
                 .call(d3.axisLeft(yScale));
 
-            // Create stacked bars
+            // =========================================================================
+            // STACKED LAYOUT EXPLANATION - PART 3: DRAWING STACKED BARS
+            // =========================================================================
+            // To draw stacked bars:
+            // 1. We first group by layer (region)
+            // 2. Then for each layer, we draw a rectangle for each category
+            // 3. The rectangle's Y position and height are determined by the [y0,y1] values
+            //    that the stack generator calculated
+            // ==========================================================================
+
+            // Create stacked bars - first create a group for each region (layer)
             svg.append("g")
                 .selectAll("g")
-                .data(series)
+                .data(series)  // series contains one array per region
                 .join("g")
-                .attr("fill", (d, i) => colorScale(i))
+                .attr("fill", (d, i) => colorScale(i))  // color by region
                 .selectAll("rect")
-                .data(d => d)
+                .data(d => d)  // each region array contains data for all categories
                 .join("rect")
-                .attr("x", d => xScale(d.data.category))
-                .attr("y", d => yScale(d[1]))
-                .attr("height", d => yScale(d[0]) - yScale(d[1]))
+                .attr("x", d => xScale(d.data.category))  // x position based on category
+                .attr("y", d => yScale(d[1]))  // y position based on end point (d[1])
+                .attr("height", d => yScale(d[0]) - yScale(d[1]))  // height = difference between start and end points
                 .attr("width", xScale.bandwidth())
                 .attr("stroke", "white")
                 .attr("stroke-width", 0.5);
