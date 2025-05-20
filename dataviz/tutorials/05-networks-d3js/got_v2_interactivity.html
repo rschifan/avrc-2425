@@ -12,7 +12,6 @@
         const width = container.getBoundingClientRect().width;
         const height = container.getBoundingClientRect().height;
 
-        let isLabelVisible = true
         let isForceDirectedAnimationOver = false;
 
         // Load data from a JSON file
@@ -50,8 +49,6 @@
 
             const linkGroup = svg.append('g');
             const nodeGroup = svg.append('g');
-            const tooltipGroup = svg.append("g");
-            const labelsGroup = svg.append("g");
 
             const link = linkGroup
                 .selectAll("line")
@@ -71,24 +68,19 @@
                 .attr("stroke-width", nodeStrokeWidth)
                 .attr("r", nodeRadius)
 
-            const tooltip = tooltipGroup
-                .append("text")
-                .attr("class", "tooltip")
+
+            // Track dragging state
+            let isDragging = false;
 
             // Handle events on nodes    
             node.on("mouseenter", function (event, d) {
-
-                if (isForceDirectedAnimationOver) {
-
+                if (isForceDirectedAnimationOver && !isDragging) {
                     d3.select(event.currentTarget).style("cursor", "pointer");
-
-                    // Change the opacity of all nodes and links
                     node.style("opacity", 0.1);
                     link.style("opacity", 0.1);
 
-                    // Get the nodes connected to the hovered node
                     const connectedNodes = node.filter(n => links.some(l => l.source === d && l.target === n || l.target === d && l.source === n));
-                    const connectedLinks = link.filter(l => l.source === d || l.target === d)
+                    const connectedLinks = link.filter(l => l.source === d || l.target === d);
 
                     d3.select(this)
                         .style("opacity", 1)
@@ -97,40 +89,10 @@
 
                     connectedLinks.style("opacity", 1);
                     connectedNodes.style("opacity", 1);
-
-                    // Set up the tooltip
-                    tooltipGroup
-                        .style("opacity", 1);
-
-                    tooltipGroup.select("text")
-                        .text(d.id)
-                        .attr('x', d.x)
-                        .attr('y', d.y - nodeRadiusScale(d.bc) - 10);
-
-                    // Add node labels when hovering on a node
-                    if (isLabelVisible) {
-
-                        var labels = labelsGroup
-                            .selectAll(".labels")
-                            .data(nodes.filter(n => links.some(l => l.source === d && l.target === n || l.target === d && l.source === n)))
-                            .join("foreignObject")
-                            .attr("class", "labels")
-                            .attr('x', (d) => d.x - (d.id.length * 8 / 2))
-                            .attr('y', (d) => d.y - nodeRadiusScale(d.bc) - 22)
-                            .attr("width", (d) => d.id.length * 8)
-                            .attr("height", 26)
-                            .append("xhtml:div")
-                            .style("text-align", "center")
-                            .style("background-color", nodeFill)
-                            .text((d) => d.id);
-                    }
-
                 }
             })
                 .on("mouseout", function (d) {
-                    if (isForceDirectedAnimationOver) {
-
-                        // Change the opacity of all nodes and links back to 1
+                    if (isForceDirectedAnimationOver && !isDragging) {
                         node.style("opacity", 1);
                         link.style("opacity", 1);
 
@@ -139,12 +101,8 @@
                             .attr("stroke-width", nodeStrokeWidth)
                             .attr("stroke", nodeStroke);
                     }
-
-                    // Remove tooltip
-                    tooltipGroup.style("opacity", 0);
-                    // Remove node labels
-                    if (isLabelVisible) labelsGroup.selectAll(".labels").remove()
                 })
+
 
             // Handle the force-directed layout    
             const forceNode = d3.forceManyBody();
@@ -161,7 +119,9 @@
                 .force("link", forceLink)
                 .force("center", forceCenter)
                 .force("collide", forceCollide)
+                .alphaDecay(0.05)
                 .on("tick", ticked)
+
                 .on("end", function (event) {
                     isForceDirectedAnimationOver = true;
                     document.getElementById("spinner").style.display = "none";
@@ -178,6 +138,7 @@
                 node
                     .attr("cx", d => d.x)
                     .attr("cy", d => d.y);
+
             }
 
             //Define the zoom behavior
@@ -188,22 +149,50 @@
                     // The transform attribute is updated with the new scale and translate values
                     linkGroup.attr("transform", event.transform);
                     nodeGroup.attr("transform", event.transform);
-                    tooltipGroup.attr("transform", event.transform);
-                    if (isLabelVisible) labelsGroup.attr("transform", event.transform);
                 });
             svg.call(zoomHandler);
 
             container.append(svg.node());
 
+            // Add drag behavior to nodes
+            const drag = d3.drag()
+                .on("start", function (event, d) {
+                    isDragging = true;
+                    if (!event.active) simulation.alphaTarget(0.3).restart();
+                    d.fx = d.x;
+                    d.fy = d.y;
+                })
+                .on("drag", function (event, d) {
+                    d.fx = event.x;
+                    d.fy = event.y;
+                })
+                .on("end", function (event, d) {
+
+                    isDragging = false;
+
+                    if (!event.active) simulation.alphaTarget(0);
+
+                    // Reset fixed position
+                    // d.fx = null;
+                    // d.fy = null;
+
+                    // Restore hover effect immediately after drag ends if mouse is still over node
+                    if (isForceDirectedAnimationOver && d3.select(this).node() === document.elementFromPoint(event.sourceEvent.clientX, event.sourceEvent.clientY)) {
+                        d3.select(this).dispatch("mouseenter", { bubbles: true });
+                    }
+                });
+
+            node.call(drag);
+
+
         }).catch(error => {
             console.error("Error loading the JSON file:", error);
         });
-
     </script>
 </head>
 
 <body>
-    <a href="index.html" class="back-button">Back to Index</a>
+    <a href="index.html" class="back-button">Home</a>
     <div id="container"></div>
     <div id="spinner">
         <span>force-directed graph layout running...</span>

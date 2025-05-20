@@ -109,14 +109,20 @@
 
                     // Add node labels when hovering on a node
                     if (isLabelVisible) {
+
                         var labels = labelsGroup
-                            .selectAll(".text-labels")
+                            .selectAll(".labels")
                             .data(nodes.filter(n => links.some(l => l.source === d && l.target === n || l.target === d && l.source === n)))
-                            .join("text")
-                            .text((d) => d.id)
-                            .attr("class", "text-labels")
-                            .attr('x', (d) => d.x)
-                            .attr('y', (d) => d.y - nodeRadiusScale(d.bc) - 4)
+                            .join("foreignObject")
+                            .attr("class", "labels")
+                            .attr('x', (d) => d.x - (d.id.length * 8 / 2))
+                            .attr('y', (d) => d.y - nodeRadiusScale(d.bc) - 22)
+                            .attr("width", (d) => d.id.length * 8)
+                            .attr("height", 26)
+                            .append("xhtml:div")
+                            .style("text-align", "center")
+                            .style("background-color", nodeFill)
+                            .text((d) => d.id);
                     }
 
                 }
@@ -137,7 +143,7 @@
                     // Remove tooltip
                     tooltipGroup.style("opacity", 0);
                     // Remove node labels
-                    if (isLabelVisible) labelsGroup.selectAll(".text-labels").remove()
+                    if (isLabelVisible) labelsGroup.selectAll(".labels").remove()
                 })
 
             // Handle the force-directed layout    
@@ -155,6 +161,7 @@
                 .force("link", forceLink)
                 .force("center", forceCenter)
                 .force("collide", forceCollide)
+                .alphaDecay(0.05)
                 .on("tick", ticked)
                 .on("end", function (event) {
                     isForceDirectedAnimationOver = true;
@@ -197,7 +204,7 @@
 </head>
 
 <body>
-    <a href="index.html" class="back-button">Back to Index</a>
+    <a href="index.html" class="back-button">Home</a>
     <div id="container"></div>
     <div id="spinner">
         <span>force-directed graph layout running...</span>

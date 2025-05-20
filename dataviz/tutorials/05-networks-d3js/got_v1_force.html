@@ -1,0 +1,297 @@
+<html>
+
+<head>
+
+    <link rel="stylesheet" href="css/got_styles.css">
+
+    <script type="module">
+
+        import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+
+        function showSpinner() {
+            spinner.style.display = "block";
+        }
+
+        function hideSpinner() {
+            spinner.style.display = "none";
+        }
+
+        function opacify(container) {
+            container.style.opacity = 0.1;
+        }
+        function deopacify(container) {
+            container.style.opacity = 1;
+        }
+
+        const width = container.getBoundingClientRect().width;
+        const height = container.getBoundingClientRect().height;
+        const halfW = width / 2;
+        const halfH = height / 2;
+
+        const controls = {
+            linkDist: document.getElementById('linkDist'),
+            linkDistVal: document.getElementById('linkDistVal'),
+            charge: document.getElementById('charge'),
+            chargeVal: document.getElementById('chargeVal'),
+            collide: document.getElementById('collide'),
+            collideVal: document.getElementById('collideVal'),
+            decay: document.getElementById('decay'),
+            decayVal: document.getElementById('decayVal'),
+            xStrength: document.getElementById('xStrength'),
+            xStrengthVal: document.getElementById('xStrengthVal'),
+            yStrength: document.getElementById('yStrength'),
+            yStrengthVal: document.getElementById('yStrengthVal')
+        };
+
+        showSpinner();
+        opacify(container);
+
+        // Load data from a JSON file
+        d3.json("data/got.json").then(got => {
+
+            var nodes = got.nodes
+            var links = got.links
+
+            const nodeRadiusScale = d3.scaleLinear()
+                .domain(d3.extent(nodes.map((d) => d.bc)))
+                .range([5, 15])
+            const linkStrokeWidthScale = d3.scaleLinear()
+                .domain(d3.extent(links.map((d) => d.weight)))
+                .range([1, 10])
+            const linkStrokeOpacityScale = d3.scaleLinear()
+                .domain(d3.extent(links.map((d) => d.weight)))
+                .range([0.3, 1])
+
+            const colorScale = d3.scaleOrdinal(d3.schemeTableau10);
+
+            const linkStroke = "#000";
+            const linkStrokeLinecap = "round";
+            const nodeStroke = "#000";
+            const nodeStrokeWidth = 1.5;
+
+            const svg = d3.create("svg")
+                .attr("viewBox", [-width / 2, -height / 2, width, height])
+
+            const linkGroup = svg.append('g');
+            const nodeGroup = svg.append('g');
+
+            const link = linkGroup
+                .selectAll("line")
+                .data(links)
+                .join("line")
+                .attr("stroke", linkStroke)
+                .attr("stroke-opacity", d => linkStrokeOpacityScale(d.weight))
+                .attr("stroke-width", d => linkStrokeWidthScale(d.weight))
+                .attr("stroke-linecap", linkStrokeLinecap)
+
+            const node = nodeGroup
+                .selectAll("circle")
+                .data(nodes)
+                .join("circle")
+                .attr("fill", d => colorScale(d.community))
+                .attr("stroke", nodeStroke)
+                .attr("stroke-width", nodeStrokeWidth)
+                .attr("r", d => nodeRadiusScale(d.bc))
+
+
+            const forceNode = d3.forceManyBody()
+
+            const forceLink = d3
+                .forceLink(links)
+                .id((d) => d.id);
+
+            const boundaryForce = () => {
+                let nodes;
+                function force() {
+                    for (const d of nodes) {
+                        d.x = Math.max(-halfW, Math.min(halfW, d.x));
+                        d.y = Math.max(-halfH, Math.min(halfH, d.y));
+                    }
+                }
+                force.initialize = _ => { nodes = _; };
+                return force;
+            };
+
+            // simulation init
+            let simulation;
+
+            function createSimulation() {
+
+                if (simulation) simulation.stop();
+
+                const dist = +controls.linkDist.value;
+                const charge = +controls.charge.value;
+                const pad = +controls.collide.value;
+                const decay = +controls.decay.value;
+                const xStr = +controls.xStrength.value;
+                const yStr = +controls.yStrength.value;
+
+                controls.linkDistVal.textContent = dist;
+                controls.chargeVal.textContent = charge;
+                controls.collideVal.textContent = pad;
+                controls.decayVal.textContent = decay;
+                controls.xStrengthVal.textContent = xStr;
+                controls.yStrengthVal.textContent = yStr;
+
+                showSpinner();
+                opacify(container);
+
+                simulation = d3.forceSimulation(nodes)
+                    .force('link', d3.forceLink(links).id(d => d.id).distance(dist))
+                    .force('charge', d3.forceManyBody().strength(charge))
+                    .force('collide', d3.forceCollide().radius(d => nodeRadiusScale(d.bc) + pad))
+                    .force('center', d3.forceCenter(0, 0))
+                    .force('x', d3.forceX(0).strength(xStr))
+                    .force('y', d3.forceY(0).strength(yStr))
+                    .force('boundary', boundaryForce())
+                    .alphaDecay(decay)
+                    .on('tick', () => {
+                        link
+                            .attr('x1', d => d.source.x)
+                            .attr('y1', d => d.source.y)
+                            .attr('x2', d => d.target.x)
+                            .attr('y2', d => d.target.y);
+                        node
+                            .attr('cx', d => d.x)
+                            .attr('cy', d => d.y);
+                    })
+                    .on('end', () => {
+                        hideSpinner(); deopacify(container);
+                    });
+            }
+
+            // initial run
+            createSimulation();
+
+            container.append(svg.node());
+
+            // slider listeners
+            Object.values(controls).forEach(ctrl => {
+                if (ctrl.tagName === 'INPUT') {
+                    ctrl.addEventListener('input', createSimulation);
+                }
+            });
+
+        }).catch(error => {
+            console.error("Error loading the JSON file:", error);
+        });
+
+
+    </script>
+</head>
+
+<body>
+    <a href="index.html" class="back-button">Home</a>
+    <a href="#tutorial" id="scrollToTutorial" class="back-button" style="left: 80px;">
+        Jump to Tutorial
+    </a>
+    <div id="container"></div>
+    <div id="spinner">
+        <span>force-directed graph layout running...</span>
+    </div>
+    <div id="controls">
+
+        <div class="control-row">
+            <div class="control-label">Link distance</div>
+            <div class="control-value" id="linkDistVal">30</div>
+            <input type="range" id="linkDist" class="control-slider" min="0" max="200" value="30">
+        </div>
+
+        <div class="control-row">
+            <div class="control-label">Charge strength</div>
+            <div class="control-value" id="chargeVal">-30</div>
+            <input type="range" id="charge" class="control-slider" min="-300" max="0" value="-30">
+        </div>
+
+        <div class="control-row">
+            <div class="control-label">Collision padding</div>
+            <div class="control-value" id="collideVal">2</div>
+            <input type="range" id="collide" class="control-slider" min="0" max="20" value="2">
+        </div>
+
+        <div class="control-row">
+            <div class="control-label">Alpha decay</div>
+            <div class="control-value" id="decayVal">0.05</div>
+            <input type="range" id="decay" class="control-slider" min="0.001" max="0.2" step="0.001" value="0.05">
+        </div>
+
+        <div class="control-row">
+            <div class="control-label">ForceX strength</div>
+            <div class="control-value" id="xStrengthVal">0.05</div>
+            <input type="range" id="xStrength" class="control-slider" min="0" max="1" step="0.01" value="0.05">
+        </div>
+
+        <div class="control-row">
+            <div class="control-label">ForceY strength</div>
+            <div class="control-value" id="yStrengthVal">0.05</div>
+            <input type="range" id="yStrength" class="control-slider" min="0" max="1" step="0.01" value="0.05">
+        </div>
+    </div>
+
+    <section id="tutorial">
+        <h2>Force-Directed Layout Parameters</h2>
+        <p>
+            A force-directed layout in D3.js simulates physical forces to automatically arrange nodes and links in a
+            network graph. You can control the behavior and appearance of the layout by adjusting several key
+            parameters:
+        </p>
+        <ul>
+            <li>
+                <b>Link distance</b> (<code>forceLink().distance()</code>):<br>
+                Sets the ideal length of links between nodes. Higher values spread nodes further apart; lower values
+                pull them closer together.
+            </li>
+            <li>
+                <b>Charge strength</b> (<code>forceManyBody().strength()</code>):<br>
+                Controls the repulsive (negative) or attractive (positive) force between all nodes. More negative values
+                push nodes apart more strongly, helping to prevent overlap.
+            </li>
+            <li>
+                <b>Collision padding</b> (<code>forceCollide().radius()</code>):<br>
+                Ensures nodes do not overlap by specifying a minimum distance between node centers. This is typically
+                set to the node's radius plus some padding.
+            </li>
+            <li>
+                <b>Alpha decay</b> (<code>simulation.alphaDecay()</code>):<br>
+                Determines how quickly the simulation "cools down" and stops. Lower values make the simulation run
+                longer and settle more slowly, which can help with complex layouts.
+            </li>
+            <li>
+                <b>Centering force</b> (<code>forceCenter()</code>):<br>
+                Pulls all nodes toward a central point (usually the center of the SVG), keeping the network visible and
+                centered.
+            </li>
+            <li>
+                <b>ForceX / ForceY strength</b> (<code>forceX().strength()</code>,
+                <code>forceY().strength()</code>):<br>
+                Additional forces that pull nodes toward a specific X or Y coordinate. Increasing their strength can
+                help align the network horizontally or vertically.
+            </li>
+            <li>
+                <b>Boundary force (custom)</b>:<br>
+                Keeps nodes within the visible area by constraining their positions. This is not a built-in D3 force,
+                but can be implemented as a custom force.
+            </li>
+        </ul>
+
+        <p>
+            <b>Tip:</b> The best settings depend on your data and visualization goals. Try different combinations to
+            find what works best for your network!
+        </p>
+        <h3>Further Reading</h3>
+        <ul>
+            <li><a href="https://github.com/d3/d3-force" target="_blank">D3 Force Simulation Documentation</a></li>
+            <li><a href="https://observablehq.com/@d3/force-directed-graph" target="_blank">D3 Force-Directed Graph
+                    Example</a></li>
+        </ul>
+    </section>
+
+    <script>
+        document.getElementById('scrollToTutorial').onclick = function (e) {
+            e.preventDefault();
+            document.getElementById('tutorial').scrollIntoView({ behavior: 'smooth' });
+        };
+    </script>
+</body>
+
+</html>

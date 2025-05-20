@@ -12,6 +12,7 @@
         const width = container.getBoundingClientRect().width;
         const height = container.getBoundingClientRect().height;
 
+        let isLabelVisible = true
         let isForceDirectedAnimationOver = false;
 
         // Load data from a JSON file
@@ -49,14 +50,16 @@
 
             const linkGroup = svg.append('g');
             const nodeGroup = svg.append('g');
+            const tooltipGroup = svg.append("g");
+            const labelsGroup = svg.append("g");
 
             const link = linkGroup
                 .selectAll("line")
                 .data(links)
                 .join("line")
                 .attr("stroke", linkStroke)
-                .attr("stroke-opacity", linkStrokeOpacity)
-                .attr("stroke-width", linkStrokeWidth)
+                .attr("stroke-opacity", d => linkStrokeOpacityScale(d.weight)) // use linkStrokeOpacityScale directly
+                .attr("stroke-width", d => linkStrokeWidthScale(d.weight))
                 .attr("stroke-linecap", linkStrokeLinecap)
 
             const node = nodeGroup
@@ -68,6 +71,9 @@
                 .attr("stroke-width", nodeStrokeWidth)
                 .attr("r", nodeRadius)
 
+            const tooltip = tooltipGroup
+                .append("text")
+                .attr("class", "tooltip")
 
             // Handle events on nodes    
             node.on("mouseenter", function (event, d) {
@@ -90,7 +96,29 @@
                         .attr("stroke", "white");
 
                     connectedLinks.style("opacity", 1);
-                    connectedNodes.style("opacity", 1)
+                    connectedNodes.style("opacity", 1);
+
+                    // Set up the tooltip
+                    tooltipGroup
+                        .style("opacity", 1);
+
+                    tooltipGroup.select("text")
+                        .text(d.id)
+                        .attr('x', d.x)
+                        .attr('y', d.y - nodeRadiusScale(d.bc) - 10);
+
+                    // Add node labels when hovering on a node
+                    if (isLabelVisible) {
+                        var labels = labelsGroup
+                            .selectAll(".text-labels")
+                            .data(nodes.filter(n => links.some(l => l.source === d && l.target === n || l.target === d && l.source === n)))
+                            .join("text")
+                            .text((d) => d.id)
+                            .attr("class", "text-labels")
+                            .attr('x', (d) => d.x)
+                            .attr('y', (d) => d.y - nodeRadiusScale(d.bc) - 4)
+                    }
+
                 }
             })
                 .on("mouseout", function (d) {
@@ -105,8 +133,12 @@
                             .attr("stroke-width", nodeStrokeWidth)
                             .attr("stroke", nodeStroke);
                     }
-                })
 
+                    // Remove tooltip
+                    tooltipGroup.style("opacity", 0);
+                    // Remove node labels
+                    if (isLabelVisible) labelsGroup.selectAll(".text-labels").remove()
+                })
 
             // Handle the force-directed layout    
             const forceNode = d3.forceManyBody();
@@ -123,6 +155,7 @@
                 .force("link", forceLink)
                 .force("center", forceCenter)
                 .force("collide", forceCollide)
+                .alphaDecay(0.05)
                 .on("tick", ticked)
                 .on("end", function (event) {
                     isForceDirectedAnimationOver = true;
@@ -140,7 +173,6 @@
                 node
                     .attr("cx", d => d.x)
                     .attr("cy", d => d.y);
-
             }
 
             //Define the zoom behavior
@@ -151,20 +183,22 @@
                     // The transform attribute is updated with the new scale and translate values
                     linkGroup.attr("transform", event.transform);
                     nodeGroup.attr("transform", event.transform);
+                    tooltipGroup.attr("transform", event.transform);
+                    if (isLabelVisible) labelsGroup.attr("transform", event.transform);
                 });
             svg.call(zoomHandler);
 
             container.append(svg.node());
 
-
         }).catch(error => {
             console.error("Error loading the JSON file:", error);
         });
+
     </script>
 </head>
 
 <body>
-    <a href="index.html" class="back-button">Back to Index</a>
+    <a href="index.html" class="back-button">Home</a>
     <div id="container"></div>
     <div id="spinner">
         <span>force-directed graph layout running...</span>
